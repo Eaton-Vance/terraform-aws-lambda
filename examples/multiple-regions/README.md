@@ -1,8 +1,7 @@
-# AWS Lambda with VPC example
+# AWS Lambda Functions in several regions
 
-Configuration in this directory creates AWS Lambda Function deployed with VPC.
+Configuration in this directory creates AWS Lambda Functions in several regions with non-conflicting IAM roles and policies.
 
-Be aware, that deletion of AWS Lambda with VPC can take long time (eg, 10 minutes).
 
 ## Usage
 
@@ -29,6 +28,8 @@ Note that this example may create resources which cost money. Run `terraform des
 
 | Name | Version |
 |------|---------|
+| aws | >= 2.67 |
+| aws.us-east-1 | >= 2.67 |
 | random | >= 2 |
 
 ## Inputs

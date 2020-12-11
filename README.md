@@ -28,7 +28,7 @@ This Terraform module is the part of [serverless.tf framework](https://github.co
 
 - [x] Build dependencies for your Lambda Function and Layer.
 - [x] Support builds locally and in Docker (with or without SSH agent support for private builds).
-- [x] Create deployment package or deploy existing (previously built package) from local, from S3, from URL.
+- [x] Create deployment package or deploy existing (previously built package) from local, from S3, from URL, or from AWS ECR repository.
 - [x] Store deployment packages locally or in the S3 bucket.
 - [x] Support almost all features of Lambda resources (function, layer, alias, etc.)
 - [x] Lambda@Edge
@@ -150,6 +150,22 @@ module "lambda_function_existing_package_s3" {
     bucket = "my-bucket-with-lambda-builds"
     key    = aws_s3_bucket_object.my_function.id
   }
+}
+```
+
+### Lambda Functions from Container Image stored on AWS ECR
+
+```hcl
+module "lambda_function_container_image" {
+  source = "terraform-aws-modules/lambda/aws"
+
+  function_name = "my-lambda-existing-package-local"
+  description   = "My awesome lambda function"
+
+  create_package = false
+  
+  image_uri    = "132367819851.dkr.ecr.eu-west-1.amazonaws.com/complete-cow:1.0"
+  package_type = "Image"
 }
 ```
 
@@ -543,12 +559,14 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 ## Examples
 
 * [Complete](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/complete) - Create Lambda resources in various combinations with all supported features.
+* [Container Image](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/container-image) - Create Docker image (using [docker provider](https://registry.terraform.io/providers/kreuzwerker/docker)), push it to AWS ECR, and create Lambda function from it.
 * [Build and Package](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/build-package) - Build and create deployment packages in various ways.
 * [Alias](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/alias) - Create static and dynamic aliases in various ways.
 * [Deploy](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/deploy) - Complete end-to-end build/update/deploy process using AWS CodeDeploy.
 * [Async Invocations](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/async) - Create Lambda Function with async event configuration (with SQS and SNS integration).
 * [With VPC](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/with-vpc) - Create Lambda Function with VPC.
 * [With EFS](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/with-efs) - Create Lambda Function with Elastic File System attached (Terraform 0.13+ is recommended).
+* [Multiple regions](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/multiple-regions) - Create the same Lambda Function in multiple regions with non-conflicting IAM roles and policies.
 
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -556,21 +574,21 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 
 | Name | Version |
 |------|---------|
-| terraform | >= 0.12.6, < 0.14 |
-| aws | >= 2.67, < 4.0 |
-| external | ~> 1 |
-| local | ~> 1 |
-| null | ~> 2 |
-| random | ~> 2 |
+| terraform | >= 0.12.6 |
+| aws | >= 2.67 |
+| external | >= 1 |
+| local | >= 1 |
+| null | >= 2 |
+| random | >= 2 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | >= 2.67, < 4.0 |
-| external | ~> 1 |
-| local | ~> 1 |
-| null | ~> 2 |
+| aws | >= 2.67 |
+| external | >= 1 |
+| local | >= 1 |
+| null | >= 2 |
 
 ## Inputs
 
@@ -618,6 +636,11 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 | function\_name | A unique name for your Lambda Function | `string` | `""` | no |
 | handler | Lambda Function entrypoint in your code | `string` | `""` | no |
 | hash\_extra | The string to add into hashing function. Useful when building same source path for different functions. | `string` | `""` | no |
+| image\_uri | The ECR image URI containing the function's deployment package. | `string` | `null` | no |
+| image\_config\_entry_point | The ENTRYPOINT for the docker image. | `string` | `null` | no |
+| image\_config\_command | The CMD for the docker image. | `string` | `null` | no |
+| image\_config\_working_directory | The working directory for the docker image. | `string` | `null` | no |
+| package\_type | The Lambda deployment package type. | `string` | `Zip` | no |
 | kms\_key\_arn | The ARN of KMS key to use by your Lambda Function | `string` | `null` | no |
 | lambda\_at\_edge | Set this to true if using Lambda@Edge, to enable publishing, limit the timeout, and allow edgelambda.amazonaws.com to invoke the function | `bool` | `false` | no |
 | lambda\_role | IAM role attached to the Lambda Function. This governs both who / what can invoke your Lambda Function, as well as what resources our Lambda Function has access to. See Lambda Permission Model for more details. | `string` | `""` | no |

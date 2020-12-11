@@ -1,8 +1,6 @@
-# AWS Lambda with VPC example
+# AWS Lambda launched from Docker Container Image example
 
-Configuration in this directory creates AWS Lambda Function deployed with VPC.
-
-Be aware, that deletion of AWS Lambda with VPC can take long time (eg, 10 minutes).
+Configuration in this directory creates AWS Lambda Function deployed with a Container Image.
 
 ## Usage
 
@@ -29,6 +27,7 @@ Note that this example may create resources which cost money. Run `terraform des
 
 | Name | Version |
 |------|---------|
+| aws | >= 2.67 |
 | random | >= 2 |
 
 ## Inputs
