@@ -277,8 +277,8 @@ module "lambda_function" {
 
   allowed_triggers = {
     APIGatewayAny = {
-      service = "apigateway"
-      arn     = "arn:aws:execute-api:eu-west-1:135367859851:aqnku8akd0"
+      service    = "apigateway"
+      source_arn = "arn:aws:execute-api:eu-west-1:135367859851:aqnku8akd0/*/*/*"
     },
     APIGatewayDevPost = {
       service    = "apigateway"
@@ -291,8 +291,6 @@ module "lambda_function" {
   }
 }
 ```
-
-Note: `service = "apigateway" with arn` is a short form to allow invocations of a Lambda Function from any stage, any method, any resource of an API Gateway.
 
 ## Conditional creation
 
@@ -351,7 +349,7 @@ terraform apply
 
 ## <a name="build"></a> Build Dependencies
 
-You can specify `source_path` in a variety of ways to achieve desired flexibility when building deployment packages locally or in Docker. You can use absolute or relative paths.
+You can specify `source_path` in a variety of ways to achieve desired flexibility when building deployment packages locally or in Docker. You can use absolute or relative paths.  If you have placed terraform files in subdirectories, note that relative paths are specified from the directory where `terraform plan` is run and not the location of your terraform file. 
 
 Note that, when building locally, files are not copying anywhere from the source directories when making packages, we use fast Python regular expressions to find matching files and directories, which makes packaging very fast and easy to understand.
 
@@ -563,7 +561,7 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 * [Build and Package](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/build-package) - Build and create deployment packages in various ways.
 * [Alias](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/alias) - Create static and dynamic aliases in various ways.
 * [Deploy](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/deploy) - Complete end-to-end build/update/deploy process using AWS CodeDeploy.
-* [Async Invocations](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/async) - Create Lambda Function with async event configuration (with SQS and SNS integration).
+* [Async Invocations](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/async) - Create Lambda Function with async event configuration (with SQS, SNS, and EventBridge integration).
 * [With VPC](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/with-vpc) - Create Lambda Function with VPC.
 * [With EFS](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/with-efs) - Create Lambda Function with Elastic File System attached (Terraform 0.13+ is recommended).
 * [Multiple regions](https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/master/examples/multiple-regions) - Create the same Lambda Function in multiple regions with non-conflicting IAM roles and policies.
@@ -575,7 +573,7 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 | Name | Version |
 |------|---------|
 | terraform | >= 0.12.6 |
-| aws | >= 2.67 |
+| aws | >= 3.19 |
 | external | >= 1 |
 | local | >= 1 |
 | null | >= 2 |
@@ -585,7 +583,7 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 
 | Name | Version |
 |------|---------|
-| aws | >= 2.67 |
+| aws | >= 3.19 |
 | external | >= 1 |
 | local | >= 1 |
 | null | >= 2 |
@@ -636,11 +634,10 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 | function\_name | A unique name for your Lambda Function | `string` | `""` | no |
 | handler | Lambda Function entrypoint in your code | `string` | `""` | no |
 | hash\_extra | The string to add into hashing function. Useful when building same source path for different functions. | `string` | `""` | no |
+| image\_config\_command | The CMD for the docker image | `list(string)` | `[]` | no |
+| image\_config\_entry\_point | The ENTRYPOINT for the docker image | `list(string)` | `[]` | no |
+| image\_config\_working\_directory | The working directory for the docker image | `string` | `null` | no |
 | image\_uri | The ECR image URI containing the function's deployment package. | `string` | `null` | no |
-| image\_config\_entry_point | The ENTRYPOINT for the docker image. | `string` | `null` | no |
-| image\_config\_command | The CMD for the docker image. | `string` | `null` | no |
-| image\_config\_working_directory | The working directory for the docker image. | `string` | `null` | no |
-| package\_type | The Lambda deployment package type. | `string` | `Zip` | no |
 | kms\_key\_arn | The ARN of KMS key to use by your Lambda Function | `string` | `null` | no |
 | lambda\_at\_edge | Set this to true if using Lambda@Edge, to enable publishing, limit the timeout, and allow edgelambda.amazonaws.com to invoke the function | `bool` | `false` | no |
 | lambda\_role | IAM role ARN attached to the Lambda Function. This governs both who / what can invoke your Lambda Function, as well as what resources our Lambda Function has access to. See Lambda Permission Model for more details. | `string` | `""` | no |
@@ -650,9 +647,10 @@ Q4: What does this error mean - `"We currently do not support adding policies fo
 | local\_existing\_package | The absolute path to an existing zip-file to use | `string` | `null` | no |
 | maximum\_event\_age\_in\_seconds | Maximum age of a request that Lambda sends to a function for processing in seconds. Valid values between 60 and 21600. | `number` | `null` | no |
 | maximum\_retry\_attempts | Maximum number of times to retry when the function returns an error. Valid values between 0 and 2. Defaults to 2. | `number` | `null` | no |
-| memory\_size | Amount of memory in MB your Lambda Function can use at runtime. Valid value between 128 MB to 3008 MB, in 64 MB increments. | `number` | `128` | no |
+| memory\_size | Amount of memory in MB your Lambda Function can use at runtime. Valid value between 128 MB to 10,240 MB (10 GB), in 64 MB increments. | `number` | `128` | no |
 | number\_of\_policies | Number of policies to attach to IAM role for Lambda Function | `number` | `0` | no |
 | number\_of\_policy\_jsons | Number of policies JSON to attach to IAM role for Lambda Function | `number` | `0` | no |
+| package\_type | The Lambda deployment package type. Valid options: Zip or Image | `string` | `"Zip"` | no |
 | policies | List of policy statements ARN to attach to Lambda Function role | `list(string)` | `[]` | no |
 | policy | An additional policy document ARN to attach to the Lambda Function role | `string` | `null` | no |
 | policy\_json | An additional policy document as JSON to attach to the Lambda Function role | `string` | `null` | no |
